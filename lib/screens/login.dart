@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:Ratedly/resources/auth_methods.dart';
 import 'package:Ratedly/screens/signup/signup_screen.dart';
 import 'package:Ratedly/utils/utils.dart';
@@ -6,6 +7,8 @@ import 'package:Ratedly/widgets/text_filed_input.dart';
 import 'package:Ratedly/responsive/mobile_screen_layout.dart';
 import 'package:Ratedly/responsive/web_screen_layout.dart';
 import 'package:Ratedly/responsive/responsive_layout.dart';
+import 'package:Ratedly/screens/terms_of_service_screen.dart';
+import 'package:Ratedly/screens/privacy_policy_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -43,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
               webScreenLayout: WebScreenLayout(),
             ),
           ),
-          (route) => false,
+              (route) => false,
         );
       } else {
         showSnackBar(context, res);
@@ -103,7 +106,58 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 fillColor: const Color(0xFF333333),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                    ),
+                    children: [
+                      const TextSpan(text: 'By logging in, you agree to our '),
+                      TextSpan(
+                        text: 'Terms of Service',
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                const TermsOfServiceScreen(),
+                              ),
+                            );
+                          },
+                      ),
+                      const TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'Privacy Policy',
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                const PrivacyPolicyScreen(),
+                              ),
+                            );
+                          },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               ElevatedButton(
                 onPressed: loginUser,
                 style: ElevatedButton.styleFrom(
@@ -115,17 +169,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      )
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                )
                     : const Text(
-                        'Log In',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Inter',
-                        ),
-                      ),
+                  'Log In',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Inter',
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               TextButton(
