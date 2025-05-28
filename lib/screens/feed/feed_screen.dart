@@ -128,6 +128,26 @@ class _FeedScreenState extends State<FeedScreen> {
             .toList();
       }
 
+      Set<String> postUserIds =
+      newPosts.map((post) => post.data()['uid'] as String).toSet();
+
+      if (postUserIds.isNotEmpty) {
+        final usersQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where(FieldPath.documentId, whereIn: postUserIds.toList())
+            .get();
+
+        final Map<String, bool> userPrivacyMap = {};
+        for (final userDoc in usersQuery.docs) {
+          userPrivacyMap[userDoc.id] = userDoc['isPrivate'] ?? false;
+        }
+
+        newPosts = newPosts.where((post) {
+          final postUserId = post.data()['uid'] as String;
+          return !(userPrivacyMap[postUserId] ?? false);
+        }).toList();
+      }
+
       // Filter blocked users
       newPosts = newPosts
           .where((post) => !blockedUsers.contains(post.data()['uid']))
@@ -172,7 +192,8 @@ class _FeedScreenState extends State<FeedScreen> {
           ? (r['rating'] as num).toDouble() // Convert to double
           : 0.0;
       return sum + rating;
-    }) / ratings.length;
+    }) /
+        ratings.length;
   }
 
   @override
@@ -199,13 +220,31 @@ class _FeedScreenState extends State<FeedScreen> {
   Widget _buildTab(String text, int index) {
     return GestureDetector(
       onTap: () {
-        if (_selectedTab != index) {
-          setState(() {
-            _selectedTab = index;
-            _isLoading = true;
-          });
-          _loadData().then((_) => setState(() => _isLoading = false));
+        final isSameTab = _selectedTab == index;
+
+        if (isSameTab) {
+          // Clear data and reset pagination for current tab
+          if (index == 0) {
+            _followingPosts.clear();
+            _lastFollowingDocument = null;
+            _hasMoreFollowing = true;
+          } else {
+            _forYouPosts.clear();
+            _lastForYouDocument = null;
+            _hasMoreForYou = true;
+          }
         }
+
+        setState(() {
+          _selectedTab = index;
+          _isLoading = true;
+        });
+
+        _loadData().then((_) {
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+        });
       },
       child: Container(
         decoration: BoxDecoration(
