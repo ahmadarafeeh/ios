@@ -20,7 +20,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               title: 'Privacy Notice for Ratedly Inc',
               content:
-              'This privacy notice for Ratedly Inc ("Company," "we," "us," or "our") describes how and why we process your information when you use our Services, such as when you download and use our mobile application, Ratedly. If you do not agree with our policies, please do not use our Services. For questions or concerns, please contact us at privacy@ratedly.com.',
+              'This privacy notice for Ratedly Inc ("Company," "we," "us," or "our") describes how and why we process your information when you use our Services, such as when you download and use our mobile application, Ratedly. If you do not agree with our policies, please do not use our Services. For questions or concerns, please contact us at ratedly9@gmail.com.',
             ),
             _buildSection(
               title: 'TABLE OF CONTENTS',
