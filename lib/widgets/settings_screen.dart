@@ -100,7 +100,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       labelText: 'Current Password',
                       labelStyle: TextStyle(color: _textColor.withOpacity(0.7)),
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: _textColor.withOpacity(0.5)),
+                        borderSide:
+                            BorderSide(color: _textColor.withOpacity(0.5)),
                       ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: _textColor),
@@ -116,7 +117,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       labelText: 'New Password',
                       labelStyle: TextStyle(color: _textColor.withOpacity(0.7)),
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: _textColor.withOpacity(0.5)),
+                        borderSide:
+                            BorderSide(color: _textColor.withOpacity(0.5)),
                       ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: _textColor),
@@ -132,7 +134,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       labelText: 'Confirm New Password',
                       labelStyle: TextStyle(color: _textColor.withOpacity(0.7)),
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: _textColor.withOpacity(0.5)),
+                        borderSide:
+                            BorderSide(color: _textColor.withOpacity(0.5)),
                       ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: _textColor),
@@ -151,17 +154,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (newPasswordController.text !=
                         confirmPasswordController.text) {
                       setState(
-                              () => errorMessage = 'New passwords do not match');
+                          () => errorMessage = 'New passwords do not match');
                       return;
                     }
                     if (newPasswordController.text.isEmpty) {
                       setState(
-                              () => errorMessage = 'New password cannot be empty');
+                          () => errorMessage = 'New password cannot be empty');
                       return;
                     }
                     if (currentPasswordController.text.isEmpty) {
                       setState(
-                              () => errorMessage = 'Current password is required');
+                          () => errorMessage = 'Current password is required');
                       return;
                     }
                     Navigator.pop(context, true);
@@ -169,7 +172,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextButton.styleFrom(
                     backgroundColor: _backgroundColor,
                   ),
-                  child: Text('Change Password', style: TextStyle(color: _textColor)),
+                  child: Text('Change Password',
+                      style: TextStyle(color: _textColor)),
                 ),
               ],
             );
@@ -375,50 +379,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: _textColor))
           : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildOptionTile(
-              title: 'Private Account',
-              icon: Icons.lock,
-              onTap: () {},
-              trailing: Switch(
-                value: _isPrivate,
-                onChanged: _togglePrivacy,
-                activeColor: _textColor,
-              ),
-            ),
-            _buildOptionTile(
-              title: 'Blocked Users',
-              icon: Icons.block,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BlockedUsersList(
-                    uid: FirebaseAuth.instance.currentUser!.uid,
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _buildOptionTile(
+                    title: 'Private Account',
+                    icon: Icons.lock,
+                    onTap: () {},
+                    trailing: Switch(
+                      value: _isPrivate,
+                      onChanged: _togglePrivacy,
+                      activeColor: _textColor,
+                    ),
                   ),
-                ),
+                  _buildOptionTile(
+                    title: 'Blocked Users',
+                    icon: Icons.block,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BlockedUsersList(
+                          uid: FirebaseAuth.instance.currentUser!.uid,
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildOptionTile(
+                    title: 'Change Password',
+                    icon: Icons.lock,
+                    onTap: _changePassword,
+                  ),
+                  _buildOptionTile(
+                    title: 'Sign Out',
+                    icon: Icons.logout,
+                    onTap: _signOut,
+                  ),
+                  _buildOptionTile(
+                    title: 'Delete Account',
+                    icon: Icons.delete,
+                    iconColor: Colors.red[400],
+                    onTap: _deleteAccount,
+                  ),
+                ],
               ),
             ),
-            _buildOptionTile(
-              title: 'Change Password',
-              icon: Icons.lock,
-              onTap: _changePassword,
-            ),
-            _buildOptionTile(
-              title: 'Sign Out',
-              icon: Icons.logout,
-              onTap: _signOut,
-            ),
-            _buildOptionTile(
-              title: 'Delete Account',
-              icon: Icons.delete,
-              iconColor: Colors.red[400],
-              onTap: _deleteAccount,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -458,7 +462,7 @@ class _BlockedUsersListState extends State<BlockedUsersList> {
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return Center(
               child:
-              Text('No blocked users', style: TextStyle(color: _textColor)),
+                  Text('No blocked users', style: TextStyle(color: _textColor)),
             );
           }
 
@@ -468,7 +472,7 @@ class _BlockedUsersListState extends State<BlockedUsersList> {
           if (blockedUsers.isEmpty) {
             return Center(
               child:
-              Text('No blocked users', style: TextStyle(color: _textColor)),
+                  Text('No blocked users', style: TextStyle(color: _textColor)),
             );
           }
 
@@ -490,18 +494,27 @@ class _BlockedUsersListState extends State<BlockedUsersList> {
                   }
 
                   final userData =
-                  userSnapshot.data!.data() as Map<String, dynamic>?;
+                      userSnapshot.data!.data() as Map<String, dynamic>?;
                   final username = userData?['username'] ?? 'Unknown User';
                   final photoUrl = userData?['photoUrl'] ?? '';
 
                   return ListTile(
                     leading: CircleAvatar(
-                      radius: 22,
                       backgroundColor: _cardColor,
-                      backgroundImage:
-                      photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
-                      child: photoUrl.isEmpty
-                          ? Icon(Icons.person, color: _textColor)
+                      backgroundImage: (userData?['photoUrl'] != null &&
+                              userData?['photoUrl'].isNotEmpty &&
+                              userData?['photoUrl'] != "default")
+                          ? NetworkImage(userData!['photoUrl'])
+                          : null,
+                      radius: 22,
+                      child: (userData?['photoUrl'] == null ||
+                              userData?['photoUrl'].isEmpty ||
+                              userData?['photoUrl'] == "default")
+                          ? Icon(
+                              Icons.person,
+                              color: _textColor,
+                              size: 36,
+                            )
                           : null,
                     ),
                     title: Text(
