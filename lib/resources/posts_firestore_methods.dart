@@ -97,13 +97,13 @@ class FireStorePostsMethods {
       );
 
       // Handle notifications after transaction
-      if (result['wasLikeRemoved']!) {
+      if (result['wasLikeRemoved']) {
         await deleteCommentLikeNotification(postId, commentId, uid);
       } else if (commentOwnerId != null && uid != commentOwnerId) {
         await createCommentLikeNotification(
           postId,
           commentId,
-          commentOwnerId!,
+          commentOwnerId,
           uid,
           result['commentText']!,
         );
@@ -133,7 +133,9 @@ class FireStorePostsMethods {
           .where((id) => id.isNotEmpty)
           .toList();
     } catch (e) {
-      debugPrint('Error fetching viewed posts: $e');
+      if (kDebugMode) {
+        print(e);
+      }
       return [];
     }
   }
@@ -173,13 +175,9 @@ class FireStorePostsMethods {
           .doc(notificationId)
           .set(notificationData, SetOptions(merge: true));
 
-      if (kDebugMode) {
-        print('Comment like notification created with ID: $notificationId');
-      }
+      if (kDebugMode) {}
     } catch (err) {
-      if (kDebugMode) {
-        print('Error creating comment like notification ($commentId): $err');
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -237,14 +235,10 @@ class FireStorePostsMethods {
             .collection('notifications')
             .doc(querySnapshot.docs.first.id)
             .delete();
-        if (kDebugMode) {
-          print('Comment like notification deleted');
-        }
+        if (kDebugMode) {}
       }
     } catch (err) {
-      if (kDebugMode) {
-        print('Error deleting comment like notification: $err');
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -252,9 +246,7 @@ class FireStorePostsMethods {
   Future<String> ratePost(String postId, String uid, double rating) async {
     String res = "Some error occurred";
     try {
-      if (kDebugMode) {
-        print('Rating post: $postId by user: $uid');
-      }
+      if (kDebugMode) {}
 
       double roundedRating = double.parse(rating.toStringAsFixed(1));
 
@@ -306,9 +298,7 @@ class FireStorePostsMethods {
       res = 'success';
     } catch (err) {
       res = err.toString();
-      if (kDebugMode) {
-        print('Error rating post: $err');
-      }
+      if (kDebugMode) {}
     }
     return res;
   }
@@ -323,9 +313,7 @@ class FireStorePostsMethods {
     try {
       // Skip self-rating notifications
       if (raterUid == postOwnerUid) {
-        if (kDebugMode) {
-          print('Skipping notification for self-rating on post $postId');
-        }
+        if (kDebugMode) {}
         return;
       }
 
@@ -355,13 +343,9 @@ class FireStorePostsMethods {
           .doc(notificationId)
           .set(notificationData, SetOptions(merge: true));
 
-      if (kDebugMode) {
-        print('Post rating notification updated: $notificationId');
-      }
+      if (kDebugMode) {}
     } catch (err) {
-      if (kDebugMode) {
-        print('Error handling post rating notification (Post: $postId): $err');
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -375,9 +359,7 @@ class FireStorePostsMethods {
       ) async {
     String res = "Some error occurred";
     try {
-      if (kDebugMode) {
-        print('Posting comment for post: $postId by user: $uid');
-      }
+      if (kDebugMode) {}
 
       if (text.isNotEmpty) {
         // Generate a unique comment ID
@@ -403,9 +385,7 @@ class FireStorePostsMethods {
 
         res = 'success';
 
-        if (kDebugMode) {
-          print('Comment posted successfully with ID: $commentId');
-        }
+        if (kDebugMode) {}
 
         await _firestore.collection('posts').doc(postId).update({
           'commentsCount': FieldValue.increment(-1),
@@ -426,9 +406,7 @@ class FireStorePostsMethods {
       }
     } catch (err) {
       res = err.toString();
-      if (kDebugMode) {
-        print('Error posting comment: $err');
-      }
+      if (kDebugMode) {}
     }
     return res;
   }
@@ -443,9 +421,7 @@ class FireStorePostsMethods {
       String commentId,
       ) async {
     try {
-      if (kDebugMode) {
-        print('Creating comment notification for post: $postId');
-      }
+      if (kDebugMode) {}
 
       // Fetch post owner UID
       final postSnapshot =
@@ -454,9 +430,7 @@ class FireStorePostsMethods {
 
       // Skip self-comment notifications
       if (commenterUid == postOwnerUid) {
-        if (kDebugMode) {
-          print('Skipping self-comment notification for comment: $commentId');
-        }
+        if (kDebugMode) {}
         return;
       }
 
@@ -481,14 +455,9 @@ class FireStorePostsMethods {
           .doc(notificationId)
           .set(notificationData);
 
-      if (kDebugMode) {
-        print('Comment notification created with ID: $notificationId');
-      }
+      if (kDebugMode) {}
     } catch (err) {
-      if (kDebugMode) {
-        print(
-            'Error creating comment notification (Comment: $commentId): $err');
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -544,8 +513,7 @@ class FireStorePostsMethods {
 
       return 'success';
     } catch (err) {
-      debugPrint('Error sharing post through chat: $err');
-      throw 'Failed to share post. Please try again.';
+      return err.toString();
     }
   }
 
@@ -563,7 +531,7 @@ class FireStorePostsMethods {
       }, SetOptions(merge: true));
     } catch (e) {
       if (kDebugMode) {
-        print('Error recording post view: $e');
+        print(e);
       }
     }
   }
@@ -584,10 +552,6 @@ class FireStorePostsMethods {
   Future<String> deletePost(String postId) async {
     String res = "Some error occurred";
     try {
-      if (kDebugMode) {
-        print('Deleting post: $postId');
-      }
-
       // 1. Get the post data first
       DocumentSnapshot postSnapshot =
       await _firestore.collection('posts').doc(postId).get();
@@ -604,28 +568,9 @@ class FireStorePostsMethods {
       // 4. Delete the Firestore document
       await _firestore.collection('posts').doc(postId).delete();
 
-      // 5. Delete related messages
-      final messages = await _firestore
-          .collectionGroup('messages')
-          .where('postId', isEqualTo: postId)
-          .get();
-
-      final batch = _firestore.batch();
-      for (var doc in messages.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-
       res = 'success';
-
-      if (kDebugMode) {
-        print('Post, image, and related messages deleted successfully');
-      }
     } catch (err) {
       res = err.toString();
-      if (kDebugMode) {
-        print('Error deleting post: $err');
-      }
     }
     return res;
   }
