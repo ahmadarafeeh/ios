@@ -8,6 +8,7 @@ import 'package:Ratedly/utils/colors.dart';
 import 'package:Ratedly/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:Ratedly/models/user.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({Key? key}) : super(key: key);
@@ -20,8 +21,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Uint8List? _file;
   bool isLoading = false;
   final TextEditingController _descriptionController = TextEditingController();
+  final double _maxFileSize = 2.5 * 1024 * 1024; // 2.5 MB in bytes
 
-  void _selectImage(BuildContext parentContext) async {
+  Future<void> _selectImage(BuildContext parentContext) async {
     return showDialog(
       context: parentContext,
       builder: (BuildContext context) {
@@ -38,10 +40,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   style: TextStyle(color: primaryColor)),
               onPressed: () async {
                 Navigator.pop(context);
-                Uint8List? file = await pickImage(ImageSource.gallery);
-                if (file != null) {
-                  setState(() => _file = file);
-                }
+                await _pickAndProcessImage(ImageSource.gallery);
               },
             ),
             SimpleDialogOption(
@@ -55,13 +54,70 @@ class _AddPostScreenState extends State<AddPostScreen> {
     );
   }
 
+  Future<void> _pickAndProcessImage(ImageSource source) async {
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 1920, // Initial resize: max width
+        maxHeight: 1920, // Initial resize: max height
+        imageQuality: 85, // Initial quality reduction
+      );
+
+      if (pickedFile != null) {
+        // First compression pass
+        Uint8List? compressedImage =
+        await FlutterImageCompress.compressWithFile(
+          pickedFile.path,
+          minWidth: 800, // Minimum width
+          minHeight: 800, // Minimum height
+          quality: 80, // Compression quality (0-100)
+          format: CompressFormat.jpeg, // Use JPEG for better compression
+        );
+
+        // If still too large, do additional compression passes
+        if (compressedImage != null && compressedImage.length > _maxFileSize) {
+          compressedImage = await _compressUntilUnderLimit(compressedImage);
+        }
+
+        if (compressedImage != null) {
+          setState(() => _file = compressedImage);
+        } else {
+          // Fallback to original if compression fails
+          Uint8List fallback = await pickedFile.readAsBytes();
+          setState(() => _file = fallback);
+        }
+      }
+    } catch (e) {
+      if (context.mounted) showSnackBar(context, 'Image error: $e');
+    }
+  }
+
+  Future<Uint8List?> _compressUntilUnderLimit(Uint8List imageBytes) async {
+    int quality = 75;
+    Uint8List? compressedImage = imageBytes;
+
+    while (quality >= 50 &&
+        compressedImage != null &&
+        compressedImage.length > _maxFileSize) {
+      compressedImage = await FlutterImageCompress.compressWithList(
+        compressedImage,
+        quality: quality,
+        format: CompressFormat.jpeg,
+      );
+      quality -= 5; // Reduce quality for next pass if needed
+    }
+    return compressedImage;
+  }
+
   void _rotateImage() {
     if (_file == null) return;
     try {
       final image = img.decodeImage(_file!);
       if (image == null) return;
       final rotated = img.copyRotate(image, angle: 90);
-      setState(() => _file = Uint8List.fromList(img.encodePng(rotated)));
+      // Use JPEG instead of PNG to maintain compression
+      setState(() =>
+      _file = Uint8List.fromList(img.encodeJpg(rotated, quality: 80)));
     } catch (e) {
       if (context.mounted) showSnackBar(context, 'Error rotating image: $e');
     }
@@ -76,6 +132,15 @@ class _AddPostScreenState extends State<AddPostScreen> {
     if (_file == null) {
       if (context.mounted)
         showSnackBar(context, "Please select an image first.");
+      return;
+    }
+
+    // Final size check (2.5MB)
+    if (_file!.length > _maxFileSize) {
+      if (context.mounted) {
+        showSnackBar(context,
+            "Image too large (max 2.5MB). Please choose a smaller image.");
+      }
       return;
     }
 
