@@ -52,7 +52,9 @@ class _FeedScreenState extends State<FeedScreen> {
 
   Future<void> _loadInitialData() async {
     await _loadData();
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _loadData({bool loadMore = false}) async {
@@ -82,10 +84,12 @@ class _FeedScreenState extends State<FeedScreen> {
             .toList();
 
         if (followingIds.isEmpty) {
-          setState(() {
-            _hasMoreFollowing = false;
-            _isLoadingMore = false;
-          });
+          if (mounted) {
+            setState(() {
+              _hasMoreFollowing = false;
+              _isLoadingMore = false;
+            });
+          }
           return;
         }
 
@@ -162,18 +166,22 @@ class _FeedScreenState extends State<FeedScreen> {
         });
       }
 
-      setState(() {
-        if (_selectedTab == 0) {
-          _followingPosts =
-          loadMore ? [..._followingPosts, ...newPosts] : newPosts;
-        } else {
-          _forYouPosts = loadMore ? [..._forYouPosts, ...newPosts] : newPosts;
-        }
-        _isLoadingMore = false;
-      });
+      if (mounted) {
+        setState(() {
+          if (_selectedTab == 0) {
+            _followingPosts =
+            loadMore ? [..._followingPosts, ...newPosts] : newPosts;
+          } else {
+            _forYouPosts = loadMore ? [..._forYouPosts, ...newPosts] : newPosts;
+          }
+          _isLoadingMore = false;
+        });
+      }
     } catch (e) {
       print('Error loading posts: $e');
-      setState(() => _isLoadingMore = false);
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+      }
     }
   }
 
